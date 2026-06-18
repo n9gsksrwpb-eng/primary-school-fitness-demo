@@ -103,3 +103,20 @@ BMI 状态：正常/低体重/超重/肥胖
 用户询问某个短板项目如何提升。
 
 系统根据通用体育教学原则给出安全、基础、非医疗化建议。
+
+## 6. 输入字段
+
+### 6.1 必填基础字段
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| grade | number | 年级，1–6 |
+| gender | string | male/female |
+| heightCm | number | 身高，厘米 |
+| weightKg | number | 体重，千克 |
+| vitalCapacityMl | number | 肺活量，毫升 |
+| run50mSeconds | number | 50米跑，秒 |
+| sitAndReachCm | number | 坐位体前屈，厘米 |
+| ropeSkippingCount | number | 一分钟跳绳，次 |
+
+### 6.2 三年级及以上字段
