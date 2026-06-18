@@ -13,18 +13,15 @@ import {
   findItemStandard,
   FITNESS_ITEM_NAMES,
   FITNESS_ITEM_UNITS,
-  getRequiredItemsByGrade,
   getWeightsByGrade,
   ROPE_SKIPPING_BONUS_RULES,
   STANDARD_VERSION,
 } from "./standards";
 import { validateFitnessInput } from "./validation";
+import { FITNESS_SAFETY_NOTICE, generateExerciseAdvice } from "./advice";
 
 const PRIVACY_NOTICE =
   "本工具为匿名即时体测查询 Demo。请不要输入姓名、学号、手机号、学校、班级、身份证号、家庭住址、照片等可识别个人身份的信息。本工具不保存个人档案，结果仅用于体育教学和健康教育参考，不构成医学诊断。";
-
-const SAFETY_NOTICE =
-  "本报告仅用于体育教学和健康教育参考，不构成医学诊断、治疗或处方。如运动中出现胸痛、头晕、呼吸困难、异常疲劳等情况，应停止运动并咨询医生、校医或专业体育教师。";
 
 const INPUT_VALUE_BY_ITEM: Record<Exclude<FitnessItem, "bmi">, keyof FitnessInput> = {
   vitalCapacity: "vitalCapacityMl",
@@ -54,7 +51,7 @@ export function scoreBmi(params: {
     throw new Error(`Missing BMI standard table for grade ${params.grade}, ${params.gender}.`);
   }
 
-  const range = standard.ranges.find((candidate) => {
+  const range = standard?.ranges.find((candidate) => {
     const aboveMin =
       candidate.minInclusive === undefined || params.bmi >= candidate.minInclusive;
     const belowMax =
@@ -205,7 +202,6 @@ export function generateFitnessReport(input: FitnessInput): FitnessReport {
     ropeSkippingBaseScore: ropeScore,
   });
   const totalScore = Math.min(120, round(standardScore + bonusScore, 1));
-  const weakItems = detectWeakItems(itemScores, bmi);
 
   return {
     input,
@@ -216,10 +212,10 @@ export function generateFitnessReport(input: FitnessInput): FitnessReport {
     bonusScore,
     totalScore,
     level: getFinalLevel(totalScore),
-    weakItems,
-    advice: generateBasicAdvice(weakItems),
+    weakItems: detectWeakItems(itemScores, bmi),
+    advice: generateExerciseAdvice(detectWeakItems(itemScores, bmi)),
     privacyNotice: PRIVACY_NOTICE,
-    safetyNotice: SAFETY_NOTICE,
+    safetyNotice: FITNESS_SAFETY_NOTICE,
   };
 }
 
@@ -252,65 +248,6 @@ function detectWeakItems(itemScores: ItemScoreResult[], bmi: BmiResult): ItemSco
   });
 
   return weakItems.sort((left, right) => left.score - right.score).slice(0, 3);
-}
-
-function generateBasicAdvice(weakItems: ItemScoreResult[]): FitnessReport["advice"] {
-  const targetItems = weakItems.map((item) => item.item);
-  if (targetItems.length === 0) {
-    return [
-      {
-        title: "保持当前运动习惯",
-        targetItems: getRequiredItemsByGrade(1).slice(0, 0),
-        weeklyPlan: [1, 2, 3, 4].map((week) => ({
-          week: week as 1 | 2 | 3 | 4,
-          goal: "保持规律活动，巩固体测表现。",
-          actions: ["每天进行轻松跑跳、拉伸或球类活动。"],
-          duration: "每次 20–30 分钟",
-          frequency: "每周 3–5 次",
-          notes: ["以舒适、不疲劳为原则。"],
-        })),
-        cautions: [SAFETY_NOTICE],
-      },
-    ];
-  }
-
-  return [
-    {
-      title: "4周基础运动建议",
-      targetItems,
-      weeklyPlan: [1, 2, 3, 4].map((week) => ({
-        week: week as 1 | 2 | 3 | 4,
-        goal: week <= 2 ? "建立规律、温和的练习节奏。" : "在安全范围内小幅增加练习量。",
-        actions: buildAdviceActions(targetItems),
-        duration: week <= 2 ? "每次 15–20 分钟" : "每次 20–30 分钟",
-        frequency: "每周 3 次",
-        notes: ["先热身，后放松。", "动作质量优先，不做惩罚性训练。"],
-      })),
-      cautions: [SAFETY_NOTICE],
-    },
-  ];
-}
-
-function buildAdviceActions(items: FitnessItem[]): string[] {
-  const actions = new Set<string>();
-  for (const item of items) {
-    if (item === "vitalCapacity") {
-      actions.add("进行轻松慢跑、跳短绳或呼吸节奏练习。");
-    } else if (item === "run50m") {
-      actions.add("练习短距离加速跑和协调摆臂。");
-    } else if (item === "sitAndReach") {
-      actions.add("进行腿后侧和髋部温和拉伸。");
-    } else if (item === "ropeSkipping") {
-      actions.add("分组练习一分钟跳绳，注意落地轻柔。");
-    } else if (item === "sitUps") {
-      actions.add("进行低强度核心稳定练习。");
-    } else if (item === "shuttleRun50x8") {
-      actions.add("进行轻松折返跑和耐力游戏。");
-    } else if (item === "bmi") {
-      actions.add("保持规律作息和日常身体活动，不进行节食或极端训练。");
-    }
-  }
-  return Array.from(actions);
 }
 
 function round(value: number, digits: number): number {
