@@ -213,26 +213,8 @@ export const ITEM_STANDARDS: ItemStandard[] = [
     status: "mock",
     sourceNote: "MOCK only. Replace with official grade 1 male vital capacity table.",
     thresholds: thresholds([
-      1700,
-      1600,
-      1500,
-      1400,
-      1300,
-      1240,
-      1180,
-      1120,
-      1060,
-      1000,
-      940,
-      880,
-      820,
-      760,
-      700,
-      660,
-      620,
-      580,
-      540,
-      500,
+      1700, 1600, 1500, 1400, 1300, 1240, 1180, 1120, 1060, 1000,
+      940, 880, 820, 760, 700, 660, 620, 580, 540, 500,
     ]),
   },
   {
@@ -244,26 +226,34 @@ export const ITEM_STANDARDS: ItemStandard[] = [
     status: "mock",
     sourceNote: "MOCK only. Replace with official grade 1 male 50m table.",
     thresholds: thresholds([
-      10.2,
-      10.3,
-      10.4,
-      10.5,
-      10.6,
-      10.8,
-      11.0,
-      11.2,
-      11.4,
-      11.6,
-      11.8,
-      12.0,
-      12.2,
-      12.4,
-      12.6,
-      12.8,
-      13.0,
-      13.2,
-      13.4,
-      13.6,
+      10.2, 10.3, 10.4, 10.5, 10.6, 10.8, 11.0, 11.2, 11.4, 11.6,
+      11.8, 12.0, 12.2, 12.4, 12.6, 12.8, 13.0, 13.2, 13.4, 13.6,
+    ]),
+  },
+  {
+    grade: 1,
+    gender: "male",
+    item: "sitAndReach",
+    direction: "higher_better",
+    unit: "cm",
+    status: "mock",
+    sourceNote: "MOCK only. Replace with official grade 1 male sit and reach table.",
+    thresholds: thresholds([
+      16.1, 14.6, 13.0, 12.0, 11.0, 9.9, 8.8, 7.7, 6.6, 5.5,
+      4.4, 3.3, 2.2, 1.1, 0, -0.8, -1.6, -2.4, -3.2, -4.0,
+    ]),
+  },
+  {
+    grade: 1,
+    gender: "male",
+    item: "ropeSkipping",
+    direction: "higher_better",
+    unit: "次",
+    status: "mock",
+    sourceNote: "MOCK only. Replace with official grade 1 male rope skipping table.",
+    thresholds: thresholds([
+      109, 104, 99, 93, 87, 80, 73, 66, 59, 52,
+      45, 38, 31, 24, 17, 14, 11, 8, 5, 2,
     ]),
   },
 ];
@@ -283,11 +273,6 @@ export interface RopeSkippingBonusRule {
   status: "mock" | "official" | "todo";
   sourceNote: string;
   maxBonus: number;
-  /**
-   * Current placeholder:
-   * eachExtraCountPerBonusPoint is only a mock implementation field.
-   * Replace with official data if the official table uses a grade/gender-specific mapping.
-   */
   eachExtraCountPerBonusPoint?: number;
 }
 
@@ -322,10 +307,6 @@ export function findItemStandard(
   item: Exclude<FitnessItem, "bmi">
 ): ItemStandard | undefined {
   return ITEM_STANDARDS.find((standard) => {
-    return (
-      standard.grade === grade &&
-      standard.gender === gender &&
-      standard.item === item
-    );
+    return standard.grade === grade && standard.gender === gender && standard.item === item;
   });
 }
